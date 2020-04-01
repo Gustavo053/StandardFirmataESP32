@@ -675,7 +675,7 @@ void sysexCallback(byte command, byte argc, byte *argv)
     while (analogRead(pinReadAnalog))
     {
       analogValue = analogRead(pinReadAnalog);
-      ledcWrite(pinWriteAnalog, (analogValue / 16));
+      ledcWrite(0, (analogValue / 16));
     }
     Firmata.sendSysex(command, argc, argv); // callback
     break;
