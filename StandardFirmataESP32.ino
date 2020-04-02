@@ -657,27 +657,52 @@ void sysexCallback(byte command, byte argc, byte *argv)
     break;
 
   case 0x03: //read and write analog
-    if (argc < 3)
-      break;
     byte pinReadAnalog;
     byte pinWriteAnalog;
+    byte pinCanal;
     unsigned int analogValue;
 
-    pinReadAnalog = argv[0];
-    pinWriteAnalog = argv[1];
-
-    pinMode(pinReadAnalog, INPUT);
-    pinMode(pinWriteAnalog, OUTPUT);
-
-    ledcSetup(0, 5000, 8);
-    ledcAttachPin(pinWriteAnalog, 0);
-
-    while (analogRead(pinReadAnalog))
+    if (argc < 2)
     {
-      analogValue = analogRead(pinReadAnalog);
-      ledcWrite(0, (analogValue / 16));
+      pinReadAnalog = argv[0];
+      pinWriteAnalog = argv[1];
+
+      pinMode(pinReadAnalog, INPUT);
+      pinMode(pinWriteAnalog, OUTPUT);
+
+      ledcSetup(0, 5000, 8);
+      ledcAttachPin(pinWriteAnalog, 0);
+
+      while (analogRead(pinReadAnalog))
+      {
+        analogValue = analogRead(pinReadAnalog);
+        ledcWrite(0, (analogValue / 16));
+      }
+      Firmata.sendSysex(command, argc, argv); // callback
     }
-    Firmata.sendSysex(command, argc, argv); // callback
+    else if (argc < 3)
+    {
+      pinReadAnalog = argv[0];
+      pinWriteAnalog = argv[1];
+      pinCanal = argv[2];
+
+      pinMode(pinReadAnalog, INPUT);
+      pinMode(pinWriteAnalog, OUTPUT);
+
+      ledcSetup(pinCanal, 5000, 8);
+      ledcAttachPin(pinWriteAnalog, pinCanal);
+
+      while (analogRead(pinReadAnalog))
+      {
+        analogValue = analogRead(pinReadAnalog);
+        ledcWrite(pinCanal, (analogValue / 16));
+      }
+      Firmata.sendSysex(command, argc, argv); // callback
+    }
+    else
+    {
+      break;
+    }
     break;
 
   case I2C_REQUEST:
