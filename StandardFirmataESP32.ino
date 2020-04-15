@@ -634,7 +634,7 @@ void sysexCallback(byte command, byte argc, byte *argv)
     break;
 
   case 0x02: //read and write digital
-    if (argc < 3)
+    if (argc < 2)
       break;
     byte pinReadDigital;
     byte pinWriteDigital;
@@ -662,7 +662,7 @@ void sysexCallback(byte command, byte argc, byte *argv)
     byte pinCanal;
     unsigned int analogValue;
 
-    if (argc < 2)
+    if (argc < 3)
     {
       pinReadAnalog = argv[0];
       pinWriteAnalog = argv[1];
@@ -680,7 +680,7 @@ void sysexCallback(byte command, byte argc, byte *argv)
       }
       Firmata.sendSysex(command, argc, argv); // callback
     }
-    else if (argc < 3)
+    else if (argc < 4)
     {
       pinReadAnalog = argv[0];
       pinWriteAnalog = argv[1];
