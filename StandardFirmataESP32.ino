@@ -20,7 +20,7 @@
 #include <ESP32_Servo.h>
 #include <Wire.h>
 #include <Firmata.h>
-#include "Boards.h"
+#include <Boards.h>
 
 #define I2C_WRITE B00000000
 #define I2C_READ B00001000
@@ -648,21 +648,23 @@ void sysexCallback(byte command, byte argc, byte *argv)
     if (digitalRead(pinReadDigital))
     {
       digitalWrite(pinWriteDigital, HIGH);
+      Firmata.sendSysex(command, argc, argv); // callback
     }
     else
     {
       digitalWrite(pinWriteDigital, LOW);
+      Firmata.sendSysex(command, argc, argv); // callback
     }
-    Firmata.sendSysex(command, argc, argv); // callback
     break;
 
   case 0x03: //read and write analog
     byte pinReadAnalog;
     byte pinWriteAnalog;
     byte pinCanal;
+    byte rawAdcReading[0];
     unsigned int analogValue;
 
-    if (argc < 3)
+    if (argc == 2)
     {
       pinReadAnalog = argv[0];
       pinWriteAnalog = argv[1];
@@ -673,14 +675,12 @@ void sysexCallback(byte command, byte argc, byte *argv)
       ledcSetup(0, 5000, 8);
       ledcAttachPin(pinWriteAnalog, 0);
 
-      while (analogRead(pinReadAnalog))
-      {
-        analogValue = analogRead(pinReadAnalog);
-        ledcWrite(0, (analogValue / 16));
-      }
-      Firmata.sendSysex(command, argc, argv); // callback
+      analogValue = analogRead(pinReadAnalog);
+      ledcWrite(0, (analogValue / 16));
+      rawAdcReading[0] = analogValue;
+      Firmata.sendSysex(command, argc, rawAdcReading); // callback    
     }
-    else if (argc < 4)
+    else if (argc == 3)
     {
       pinReadAnalog = argv[0];
       pinWriteAnalog = argv[1];
@@ -692,12 +692,10 @@ void sysexCallback(byte command, byte argc, byte *argv)
       ledcSetup(pinCanal, 5000, 8);
       ledcAttachPin(pinWriteAnalog, pinCanal);
 
-      while (analogRead(pinReadAnalog))
-      {
-        analogValue = analogRead(pinReadAnalog);
-        ledcWrite(pinCanal, (analogValue / 16));
-      }
-      Firmata.sendSysex(command, argc, argv); // callback
+      analogValue = analogRead(pinReadAnalog);
+      ledcWrite(pinCanal, (analogValue / 16));
+      rawAdcReading[0] = analogValue;
+      Firmata.sendSysex(command, argc, rawAdcReading); // callback
     }
     else
     {
